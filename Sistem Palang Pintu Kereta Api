@@ -1,0 +1,140 @@
+#include<evive.h>
+
+#define Servo1_pin 44
+#define Servo2_pin 45
+
+const unsigned int ultrasonic_threshould = 10;
+
+const int buzz=46;
+const int trig = 4;
+const int echo = 3;
+
+Servo Servo1;
+Servo Servo2;
+
+unsigned int Servo_init = 90;
+
+long duration;
+int distance;
+
+
+
+void setup() {
+  // put your setup code here, to run once:
+  Serial.begin(250000);
+
+   pinMode(buzz,OUTPUT);
+   pinMode(trig, OUTPUT); // Sets the trigPin as an Output
+   pinMode(echo, INPUT); // Sets the echoPin as an Input
+
+  Servo1.attach(Servo1_pin);
+  Servo2.attach(Servo2_pin);
+
+  Servo1.write(Servo_init);
+  Servo2.write(Servo_init);
+
+   tft_init(INITR_GREENTAB);
+   tft.setRotation(1);
+   tft.fillScreen(1);
+
+    tft.setCursor(25,10);
+  tft.setTextSize(2);
+  tft.setTextColor(ST7735_WHITE,ST7735_BLACK);
+  tft.print("STEMpedia");
+
+   tft.setCursor(15,40);
+  tft.setTextSize(1.8);
+  tft.setTextColor(ST7735_GREEN,ST7735_BLACK);
+  tft.print("SMART RAILWAY CROSSING ");
+
+  tft.setCursor(55,50);
+  tft.setTextSize(1.8);
+  tft.setTextColor(ST7735_GREEN,ST7735_BLACK);
+  tft.print("SYSTEM");
+
+ 
+  tft.setTextColor(ST7735_GREEN,ST7735_BLACK);
+  tft.setCursor(0,105);
+  tft.setTextSize(1.8);
+  tft.print("FOR MORE INFORMATION VISIT");
+  tft.setCursor(30,115);
+  tft.setTextColor(ST7735_WHITE,ST7735_BLACK);
+  tft.print("thestempedia.com");
+
+  
+  tft.setCursor(40,70);
+  tft.setTextSize(1.8);
+  tft.setTextColor(ST7735_GREEN,ST7735_BLACK);
+  tft.print("GATE STATUS");
+
+
+}
+
+void loop() {
+  // put your main code here, to run repeatedly:
+  distance = calculateDistance();
+  Serial.println(distance);
+  if(distance <= ultrasonic_threshould)
+     {
+        Close();
+        tft.setCursor(55,90);
+        tft.setTextSize(1.8);
+        tft.setTextColor(ST7735_BLUE,ST7735_BLACK);
+        tft.print("CLOSE");
+        for(unsigned int i=0;i<60;i++)
+        {
+           siren();
+        }
+       
+        
+      }
+  else if(distance>ultrasonic_threshould)
+     {
+      
+        Servo1.write(Servo_init);
+        Servo2.write(Servo_init);
+        tft.setCursor(55,90);
+        tft.setTextSize(1.8);
+        tft.setTextColor(ST7735_GREEN,ST7735_BLACK);
+        tft.print("OPEN ");
+     }
+
+}
+
+int calculateDistance()
+        { 
+            digitalWrite(trig, LOW); 
+            delayMicroseconds(2);
+            // Sets the trigPin on HIGH state for 10 micro seconds
+            digitalWrite(trig, HIGH); 
+            delayMicroseconds(10);
+            digitalWrite(trig, LOW);
+            duration = pulseIn(echo, HIGH); // Reads the echoPin, returns the sound wave travel time in microseconds
+            distance= duration*0.034/2;
+            return distance;
+        }
+
+void siren()
+       {
+            for(int hz = 440; hz < 1000; hz+=25)
+                 {
+                   tone(buzz, hz, 50);
+                  delay(5);
+                 }
+           // Whoop down
+           for(int hz = 1000; hz > 440; hz-=25)
+                {
+                   tone(buzz, hz, 50);
+                   delay(5);      
+                }
+       }
+
+void Close()
+      {
+               Servo1.write(30);
+               Servo2.write(30);
+               Servo1.write(0);
+               Servo2.write(0);
+               
+               delay(15);                                                                                                                                                                                                                                                                                                                                                                                                                                                                      
+      }
